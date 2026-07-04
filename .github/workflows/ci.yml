@@ -28,7 +28,7 @@ jobs:
 
     - name: Run MLflow Project (Re-training Model)
       run: |
-        mlflow run . --env-manager local
+        mlflow run MLProject --env-manager local
 
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v2
