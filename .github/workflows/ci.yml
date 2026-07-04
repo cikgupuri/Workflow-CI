@@ -42,7 +42,7 @@ jobs:
     - name: Build Docker Image using MLflow
       run: |
         # Menggunakan mlflow build-docker untuk membuat image dari model yang baru dilatih
-        mlflow models build-docker -m "MLProject/mlruns/183077793844436178/${{ github.sha }}/artifacts/model" -n "${{ secrets.DOCKERHUB_USERNAME }}/mlops-dropout-model:latest"
+        mlflow models build-docker -m "MLProject/mlruns/183077793844436178/latest/artifacts/model" -n "${{ secrets.DOCKERHUB_USERNAME }}/mlflow-model:latest" --env-manager local
 
     - name: Push Docker Image to Docker Hub
       run: |
