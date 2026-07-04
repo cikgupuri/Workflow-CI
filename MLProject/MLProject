@@ -1,0 +1,7 @@
+name: Projek_Eksperimen_Dropout_Maspuri
+
+conda_env: conda.yaml
+
+entry_points:
+  main:
+    command: "python modelling.py"
