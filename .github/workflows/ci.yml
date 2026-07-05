@@ -43,14 +43,13 @@ jobs:
       run: |
         - name: Build Docker Image using MLflow
       run: |
-        # 1. Cari lokasi folder model yang baru dilatih secara otomatis di seluruh direktori
-        MODEL_PATH=$(find . -type d -path "*/mlruns/183077793844436178/*/artifacts/model" | head -n 1)
+        # 1. Ambil RUN ID terbaru dari eksperimen resmi Bapak menggunakan perintah Python pendek
+        export REPO_RUN_ID=$(python -c "import mlflow; exp = mlflow.get_experiment_by_name('Eksperimen_Prediksi_Dropout_Maspuri'); runs = mlflow.search_runs(experiment_ids=[exp.experiment_id], order_by=['attributes.start_time DESC']); print(runs.iloc[0]['run_id'])")
         
-        # 2. Cetak ke log untuk memastikan jalurnya ketemu
-        echo "Jalur model ditemukan di: $MODEL_PATH"
+        echo "Menemukan Run ID terbaru: $REPO_RUN_ID"
         
-        # 3. Jalankan build-docker menggunakan jalur otomatis yang ditemukan tadi
-        mlflow models build-docker -m "$MODEL_PATH" -n "${{ secrets.DOCKERHUB_USERNAME }}/mlflow-model:latest" --env-manager local
+        # 2. Jalankan build-docker menggunakan skema URI 'runs:/' yang dipahami oleh MLflow
+        mlflow models build-docker -m "runs:/$REPO_RUN_ID/model" -n "${{ secrets.DOCKERHUB_USERNAME }}/mlflow-model:latest" --env-manager local
 
     - name: Push Docker Image to Docker Hub
       run: |
