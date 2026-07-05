@@ -41,11 +41,15 @@ jobs:
 
     - name: Build Docker Image using MLflow
       run: |
-        # 1. Pindah ke direktori tempat jalannya project dan folder mlruns berada
+        # 1. Pindah ke direktori project tempat mlruns berada
         cd MLProject
         
-        # 2. Bangun Docker menggunakan parameter eksperimen default (0) dan lari terakhir (latest)
-        mlflow models build-docker -m "mlruns/0/latest/artifacts/model" -n "${{ secrets.DOCKERHUB_USERNAME }}/mlflow-model:latest" --env-manager local
+        # 2. Cari nama folder artifact yang sesungguhnya di dalam folder run terakhir (latest)
+        ARTIFACT_NAME=$(ls -d mlruns/0/latest/artifacts/*/ | head -n 1 | xargs basename)
+        echo "Nama folder artifact model yang ditemukan: $ARTIFACT_NAME"
+        
+        # 3. Bangun Docker menggunakan nama folder artifact yang terdeteksi secara dinamis
+        mlflow models build-docker -m "mlruns/0/latest/artifacts/$ARTIFACT_NAME" -n "${{ secrets.DOCKERHUB_USERNAME }}/mlflow-model:latest" --env-manager local
 
     - name: Push Docker Image to Docker Hub
       run: |
