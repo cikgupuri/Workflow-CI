@@ -41,15 +41,21 @@ jobs:
 
     - name: Build Docker Image using MLflow
       run: |
-        # 1. Pindah ke direktori MLProject tempat mlruns berada
+        # 1. Masuk ke folder project tempat proses training menghasilkan folder mlruns
         cd MLProject
         
-        # 2. Gunakan MLflow API resmi lewat Python untuk mencari lokasi folder model teranyar secara presisi
-        MODEL_URI=$(python -c "import mlflow; exp = mlflow.get_experiment_by_name('Eksperimen_Prediksi_Dropout_Maspuri'); runs = mlflow.search_runs(experiment_ids=[exp.experiment_id], order_by=['attributes.start_time DESC']); print(f'runs:/{runs.iloc[0].run_id}/model')")
-        echo "Akurat menemukan Model URI: $MODEL_URI"
+        # 2. Cari jalur folder 'model' yang berada di dalam struktur artifacts secara fisik
+        MODEL_PATH=$(find mlruns/ -path "*/artifacts/model" -type d | head -n 1)
+        echo "Berhasil menemukan jalur fisik model: $MODEL_PATH"
         
-        # 3. Bangun Docker menggunakan URI resmi hasil pelacakan Python
-        mlflow models build-docker -m "$MODEL_URI" -n "${{ secrets.DOCKERHUB_USERNAME }}/mlflow-model:latest" --env-manager local
+        # 3. Validasi untuk memastikan folder benar-benar ada sebelum build docker
+        if [ -z "$MODEL_PATH" ]; then
+          echo "Error: Folder model artifacts tidak ditemukan di dalam MLProject/mlruns!"
+          exit 1
+        fi
+        
+        # 4. Bangun Docker menggunakan jalur lokal relatif yang valid
+        mlflow models build-docker -m "$MODEL_PATH" -n "${{ secrets.DOCKERHUB_USERNAME }}/mlflow-model:latest" --env-manager local
 
     - name: Push Docker Image to Docker Hub
       run: |
