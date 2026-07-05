@@ -45,8 +45,8 @@ jobs:
         MODEL_PATH=$(find mlruns/ -path "*/artifacts/model" -type d | head -n 1)
         echo "Berhasil menemukan jalur fisik model: $MODEL_PATH"
         
-        # 2. Bangun Docker menggunakan tag nama yang disinkronkan: mlops-dropout-model
-        mlflow models build-docker -m "$MODEL_PATH" -n "${{ secrets.DOCKERHUB_USERNAME }}/mlops-dropout-model:latest" --env-manager local
+        # 2. Bangun Docker menggunakan env-manager virtualenv (Standar resmi GitHub Actions)
+        mlflow models build-docker -m "$MODEL_PATH" -n "${{ secrets.DOCKERHUB_USERNAME }}/mlops-dropout-model:latest" --env-manager virtualenv
 
     - name: Push Docker Image to Docker Hub
       run: |
