@@ -43,13 +43,16 @@ jobs:
       run: |
         - name: Build Docker Image using MLflow
       run: |
-        # 1. Ambil RUN ID terbaru dari eksperimen resmi Bapak menggunakan perintah Python pendek
-        export REPO_RUN_ID=$(python -c "import mlflow; exp = mlflow.get_experiment_by_name('Eksperimen_Prediksi_Dropout_Maspuri'); runs = mlflow.search_runs(experiment_ids=[exp.experiment_id], order_by=['attributes.start_time DESC']); print(runs.iloc[0]['run_id'])")
+        # 1. Cari file meta.yaml yang berada di dalam folder artifacts/model secara global
+        META_FILE=$(find . -path "*/artifacts/model/../../meta.yaml" | head -n 1)
         
-        echo "Menemukan Run ID terbaru: $REPO_RUN_ID"
+        # 2. Ambil baris run_id dari file tersebut secara akurat
+        export DYNAMIC_RUN_ID=$(grep "run_id:" "$META_FILE" | awk '{print $2}' | tr -d '"' | tr -d "'")
         
-        # 2. Jalankan build-docker menggunakan skema URI 'runs:/' yang dipahami oleh MLflow
-        mlflow models build-docker -m "runs:/$REPO_RUN_ID/model" -n "${{ secrets.DOCKERHUB_USERNAME }}/mlflow-model:latest" --env-manager local
+        echo "Berhasil mengekstrak Run ID dari meta.yaml: $DYNAMIC_RUN_ID"
+        
+        # 3. Bangun Docker menggunakan URI runs:/ yang sudah dipetakan secara dinamis
+        mlflow models build-docker -m "runs:/$DYNAMIC_RUN_ID/model" -n "${{ secrets.DOCKERHUB_USERNAME }}/mlflow-model:latest" --env-manager local
 
     - name: Push Docker Image to Docker Hub
       run: |
