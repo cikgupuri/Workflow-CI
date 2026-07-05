@@ -41,11 +41,11 @@ jobs:
 
     - name: Build Docker Image using MLflow
       run: |
-        # 1. Cari folder ID Run terbaru secara dinamis di dalam folder MLProject/mlruns/183077793844436178
-        LATEST_RUN=$(ls -t MLProject/mlruns/183077793844436178 | grep -v "meta.yaml" | head -n 1)
+        # 1. Cari folder ID Run terbaru langsung di folder mlruns utama
+        LATEST_RUN=$(ls -t mlruns/183077793844436178 | grep -v "meta.yaml" | head -n 1)
         
-        # 2. Jalankan build-docker menggunakan path ID Run yang didapatkan otomatis tadi
-        mlflow models build-docker -m "MLProject/mlruns/183077793844436178/$LATEST_RUN/artifacts/model" -n "${{ secrets.DOCKERHUB_USERNAME }}/mlflow-model:latest" --env-manager local
+        # 2. Jalankan build-docker menggunakan path asli mlruns
+        mlflow models build-docker -m "mlruns/183077793844436178/$LATEST_RUN/artifacts/model" -n "${{ secrets.DOCKERHUB_USERNAME }}/mlflow-model:latest" --env-manager local
 
     - name: Push Docker Image to Docker Hub
       run: |
