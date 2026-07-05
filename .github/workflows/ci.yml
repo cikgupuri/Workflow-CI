@@ -41,22 +41,14 @@ jobs:
 
     - name: Build Docker Image using MLflow
       run: |
-        # 1. Investigasi total: Cetak posisi folder aktif saat ini
-        echo "=== POSISI DIREKTORI SEKARANG ==="
-        pwd
+        # 1. Cari jalur folder model secara fisik dari root workspace
+        MODEL_PATH=$(find mlruns/ -path "*/artifacts/model" -type d | head -n 1)
+        echo "Berhasil menemukan jalur fisik model: $MODEL_PATH"
         
-        # 2. Cetak seluruh isi folder root untuk melihat apakah mlruns ada
-        echo "=== ISI FOLDER UTAMA (ROOT) ==="
-        ls -la
-        
-        # 3. Cetak isi folder MLProject
-        echo "=== ISI FOLDER MLPROJECT ==="
-        ls -la MLProject/
-        
-        # 4. Cari tahu apakah ada folder bernama mlruns di seluruh komputer
-        echo "=== MENCARI LOKASI FOLDER MLRUNS ==="
-        find . -name "mlruns" -type d
+        # 2. Bangun Docker menggunakan tag nama yang disinkronkan: mlops-dropout-model
+        mlflow models build-docker -m "$MODEL_PATH" -n "${{ secrets.DOCKERHUB_USERNAME }}/mlops-dropout-model:latest" --env-manager local
 
     - name: Push Docker Image to Docker Hub
       run: |
+        # Mengirimkan image yang namanya sudah sinkron dengan tahap di atas
         docker push ${{ secrets.DOCKERHUB_USERNAME }}/mlops-dropout-model:latest
