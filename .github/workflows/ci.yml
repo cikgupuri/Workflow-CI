@@ -41,16 +41,11 @@ jobs:
 
     - name: Build Docker Image using MLflow
       run: |
-        - name: Build Docker Image using MLflow
-      run: |
-        - name: Build Docker Image using MLflow
-      run: |
-        # 1. Gunakan Python bawaan runner untuk mencari berkas meta.yaml dan mengambil run_id secara aman
-        DYNAMIC_RUN_ID=$(python -c "import pathlib, yaml; meta_path = next(pathlib.Path('.').glob('**/artifacts/model/../../meta.yaml')); meta = yaml.safe_load(meta_path.read_text()); print(meta['run_id'])")
+        # Ambil Run ID terbaru secara dinamis dari file meta.yaml menggunakan skrip Python pendek
+        DYNAMIC_RUN_ID=$(python -c "import pathlib, os; meta_path = next(pathlib.Path('.').glob('**/artifacts/model/../../meta.yaml')); print(meta_path.parent.name)")
+        echo "Berhasil menemukan Run ID terbaru: $DYNAMIC_RUN_ID"
         
-        echo "Berhasil menemukan Run ID: $DYNAMIC_RUN_ID"
-        
-        # 2. Bangun Docker Image menggunakan URI resmi MLflow
+        # Bangun Docker Image menggunakan URI resmi MLflow
         mlflow models build-docker -m "runs:/$DYNAMIC_RUN_ID/model" -n "${{ secrets.DOCKERHUB_USERNAME }}/mlflow-model:latest" --env-manager local
 
     - name: Push Docker Image to Docker Hub
