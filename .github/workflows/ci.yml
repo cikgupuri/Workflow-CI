@@ -41,12 +41,11 @@ jobs:
 
     - name: Build Docker Image using MLflow
       run: |
-        # Ambil Run ID terbaru secara dinamis dari file meta.yaml menggunakan skrip Python pendek
-        DYNAMIC_RUN_ID=$(python -c "import pathlib, os; meta_path = next(pathlib.Path('.').glob('**/artifacts/model/../../meta.yaml')); print(meta_path.parent.name)")
-        echo "Berhasil menemukan Run ID terbaru: $DYNAMIC_RUN_ID"
+        # 1. Pindah ke direktori tempat jalannya project dan folder mlruns berada
+        cd MLProject
         
-        # Bangun Docker Image menggunakan URI resmi MLflow
-        mlflow models build-docker -m "runs:/$DYNAMIC_RUN_ID/model" -n "${{ secrets.DOCKERHUB_USERNAME }}/mlflow-model:latest" --env-manager local
+        # 2. Bangun Docker menggunakan parameter eksperimen default (0) dan lari terakhir (latest)
+        mlflow models build-docker -m "mlruns/0/latest/artifacts/model" -n "${{ secrets.DOCKERHUB_USERNAME }}/mlflow-model:latest" --env-manager local
 
     - name: Push Docker Image to Docker Hub
       run: |
