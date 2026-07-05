@@ -41,20 +41,17 @@ jobs:
 
     - name: Build Docker Image using MLflow
       run: |
-        # 1. Masuk ke folder project tempat proses training menghasilkan folder mlruns
-        cd MLProject
-        
-        # 2. Cari jalur folder 'model' yang berada di dalam struktur artifacts secara fisik
+        # 1. Cari jalur folder 'model' dari folder utama (root) repositori secara presisi
         MODEL_PATH=$(find mlruns/ -path "*/artifacts/model" -type d | head -n 1)
         echo "Berhasil menemukan jalur fisik model: $MODEL_PATH"
         
-        # 3. Validasi untuk memastikan folder benar-benar ada sebelum build docker
+        # 2. Validasi untuk memastikan folder benar-benar ada sebelum build docker
         if [ -z "$MODEL_PATH" ]; then
-          echo "Error: Folder model artifacts tidak ditemukan di dalam MLProject/mlruns!"
+          echo "Error: Folder model artifacts tidak ditemukan di folder mlruns utama!"
           exit 1
         fi
         
-        # 4. Bangun Docker menggunakan jalur lokal relatif yang valid
+        # 3. Bangun Docker menggunakan jalur lokal relatif yang valid dari folder root
         mlflow models build-docker -m "$MODEL_PATH" -n "${{ secrets.DOCKERHUB_USERNAME }}/mlflow-model:latest" --env-manager local
 
     - name: Push Docker Image to Docker Hub
